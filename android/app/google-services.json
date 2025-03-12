@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "502258866519",
+    "project_id": "thirdrail-1e56e",
+    "storage_bucket": "thirdrail-1e56e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:502258866519:android:a18c01611fd6b687e3c612",
+        "android_client_info": {
+          "package_name": "com.example.thirdrail"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3w3ELPnR-7Ybfrxe5qD8MbQ361413b1Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
