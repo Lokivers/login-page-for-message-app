@@ -23,10 +23,11 @@ class EventRepository {
           eventDate: (data['eventDate'] as Timestamp).toDate(),
           location: data['location'] ?? '',
           category: data['category'] ?? '',
+          latitude: data['latitude'] ?? 0.0,
+          longitude: data['longitude'] ?? 0.0,
         );
       }).toList();
     } catch (e) {
-      print('Error fetching events: $e');
       return [];
     }
   }
@@ -42,7 +43,6 @@ class EventRepository {
         'category': event.category,
       });
     } catch (e) {
-      print('Error uploading event: $e');
       throw Exception('Failed to upload event');
     }
   }
@@ -51,7 +51,6 @@ class EventRepository {
     try {
       await _firestore.collection('events').doc(eventId).delete();
     } catch (e) {
-      print('Error deleting event: $e');
       throw Exception('Failed to delete event');
     }
   }

@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/event.dart';
 import '../repositories/event_repository.dart';
+import 'event_location_map.dart';
 
 class EventCard extends StatelessWidget {
   final Event event;
-  final Function? onDelete;
+  final VoidCallback onDelete;
 
-  const EventCard({super.key, required this.event, this.onDelete});
+  const EventCard({super.key, required this.event, required this.onDelete});
 
   Future<void> _confirmDelete(BuildContext context) async {
     final bool? confirm = await showDialog<bool>(
@@ -33,7 +34,7 @@ class EventCard extends StatelessWidget {
     if (confirm == true && event.id != null) {
       try {
         await EventRepository().deleteEvent(event.id!);
-        onDelete?.call();
+        onDelete.call();
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(
@@ -67,6 +68,7 @@ class EventCard extends StatelessWidget {
                   onPressed: () => _confirmDelete(context),
                   icon: const Icon(Icons.delete),
                   style: IconButton.styleFrom(
+                    // ignore: deprecated_member_use
                     backgroundColor: Colors.white.withOpacity(0.7),
                   ),
                 ),
@@ -119,6 +121,11 @@ class EventCard extends StatelessWidget {
                 Text(
                   event.description,
                   style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 8),
+                EventLocationMap(
+                  latitude: event.latitude,
+                  longitude: event.longitude,
                 ),
               ],
             ),

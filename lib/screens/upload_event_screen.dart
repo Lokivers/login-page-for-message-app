@@ -44,6 +44,8 @@ class _UploadEventScreenState extends State<UploadEventScreen> {
           eventDate: _selectedDate!,
           location: _locationController.text,
           category: _categoryController.text,
+          latitude: 0.0, // Replace with actual latitude value
+          longitude: 0.0, // Replace with actual longitude value
         );
 
         await _eventRepository.uploadEvent(event);
