@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         centerTitle: true,
         title: const Text(
-          'ThirdRail',
+          'admin updater',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,

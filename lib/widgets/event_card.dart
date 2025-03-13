@@ -97,6 +97,8 @@ class _EventCardState extends State<EventCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -182,21 +184,37 @@ class _EventCardState extends State<EventCard> {
               ],
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Icon(
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ListTile(
+                leading: Icon(
                   Icons.calendar_today,
-                  size: 16,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
-                Text(
+                title: Text(
                   dateFormat.format(widget.event.date),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                subtitle: Text(
+                  widget.event.formattedTime,
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
-                const Spacer(),
+                trailing: IconButton.filledTonal(
+                  icon: const Icon(Icons.edit_calendar),
+                  onPressed: _handleDateChange,
+                  tooltip: 'Change date and time',
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
                 TextButton.icon(
                   icon: const Icon(Icons.share),
                   label: const Text('Share'),
@@ -210,15 +228,6 @@ class _EventCardState extends State<EventCard> {
                   },
                 ),
               ],
-            ),
-            ListTile(
-              leading: const Icon(Icons.calendar_today),
-              title: Text(dateFormat.format(widget.event.date)),
-              subtitle: Text(widget.event.formattedTime),
-              trailing: IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: _handleDateChange,
-              ),
             ),
           ],
         ),
