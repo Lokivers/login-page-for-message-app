@@ -63,12 +63,22 @@ class Event {
 
   Future<void> toggleLike() async {
     try {
-      final firebaseService = FirebaseService.instance();
+      final firebaseService = await FirebaseService.getInstance();
       final docRef = firebaseService.eventsCollection.doc(id);
       await docRef.update({'isLiked': !isLiked});
       isLiked = !isLiked;
     } catch (e) {
       throw Exception('Failed to toggle like status: $e');
+    }
+  }
+
+  Future<void> updateDate(DateTime newDate) async {
+    try {
+      final firebaseService = await FirebaseService.getInstance();
+      final docRef = firebaseService.eventsCollection.doc(id);
+      await docRef.update({'date': Timestamp.fromDate(newDate)});
+    } catch (e) {
+      throw Exception('Failed to update event date: $e');
     }
   }
 

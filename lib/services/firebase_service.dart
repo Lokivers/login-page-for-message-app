@@ -1,23 +1,27 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class FirebaseService {
   static FirebaseService? _instance;
   static bool _initialized = false;
 
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
+  final firebase_storage.FirebaseStorage _storage;
 
   FirebaseService._()
     : _firestore = FirebaseFirestore.instance,
-      _storage = FirebaseStorage.instance;
+      _storage = firebase_storage.FirebaseStorage.instance;
 
   static Future<FirebaseService> getInstance() async {
     if (!_initialized) {
-      await Firebase.initializeApp();
-      _initialized = true;
-      _instance = FirebaseService._();
+      try {
+        await Firebase.initializeApp();
+        _initialized = true;
+        _instance = FirebaseService._();
+      } catch (e) {
+        throw Exception('Failed to initialize Firebase: $e');
+      }
     }
     return _instance!;
   }
@@ -25,7 +29,8 @@ class FirebaseService {
   CollectionReference<Map<String, dynamic>> get eventsCollection =>
       _firestore.collection('events');
 
-  Reference get eventsStorageRef => _storage.ref().child('events');
+  firebase_storage.Reference get eventsStorageRef =>
+      _storage.ref().child('events');
 
   Future<void> deleteImage(String imageUrl) async {
     try {
@@ -76,5 +81,10 @@ class FirebaseService {
     }
   }
 
-  static instance() {}
+  static FirebaseService instance() {
+    if (!_initialized) {
+      throw Exception('Firebase not initialized. Call getInstance() first.');
+    }
+    return _instance!;
+  }
 }

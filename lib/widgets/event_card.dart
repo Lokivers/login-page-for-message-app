@@ -41,6 +41,59 @@ class _EventCardState extends State<EventCard> {
     }
   }
 
+  Future<void> _handleDateChange() async {
+    final DateTime? newDate = await showDatePicker(
+      context: context,
+      initialDate: widget.event.date,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+
+    if (newDate != null) {
+      final TimeOfDay? newTime = await showTimePicker(
+        // ignore: use_build_context_synchronously
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(widget.event.date),
+      );
+
+      if (newTime != null && mounted) {
+        final DateTime updatedDateTime = DateTime(
+          newDate.year,
+          newDate.month,
+          newDate.day,
+          newTime.hour,
+          newTime.minute,
+        );
+
+        try {
+          await widget.event.updateDate(updatedDateTime);
+          setState(() {});
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Event date updated successfully')),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to update date: $e')),
+            );
+          }
+        }
+      }
+    }
+  }
+
+  void _handleFilter() {
+    // Show filter functionality message for now
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Filter functionality coming soon!'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -51,6 +104,11 @@ class _EventCardState extends State<EventCard> {
           children: [
             Row(
               children: [
+                IconButton(
+                  icon: const Icon(Icons.filter_list),
+                  onPressed: _handleFilter,
+                  tooltip: 'Filter events',
+                ),
                 Expanded(
                   child: Text(
                     widget.event.title,
@@ -152,6 +210,15 @@ class _EventCardState extends State<EventCard> {
                   },
                 ),
               ],
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_today),
+              title: Text(dateFormat.format(widget.event.date)),
+              subtitle: Text(widget.event.formattedTime),
+              trailing: IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: _handleDateChange,
+              ),
             ),
           ],
         ),
