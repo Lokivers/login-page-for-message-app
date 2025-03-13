@@ -50,9 +50,9 @@ class _UploadEventScreenState extends State<UploadEventScreen> {
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error uploading event: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error uploading event: $e')));
         }
       }
     }
@@ -61,10 +61,7 @@ class _UploadEventScreenState extends State<UploadEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Upload Event'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Upload Event'), centerTitle: true),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -74,22 +71,27 @@ class _UploadEventScreenState extends State<UploadEventScreen> {
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(labelText: 'Title'),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Title is required' : null,
+                validator:
+                    (value) =>
+                        value?.isEmpty ?? true ? 'Title is required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
                 maxLines: 3,
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Description is required' : null,
+                validator:
+                    (value) =>
+                        value?.isEmpty ?? true
+                            ? 'Description is required'
+                            : null,
               ),
               const SizedBox(height: 16),
               ListTile(
                 title: const Text('Event Date'),
                 subtitle: Text(
-                    '${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}'),
+                  '${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}',
+                ),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selectDate(context),
               ),

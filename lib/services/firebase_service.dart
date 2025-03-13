@@ -38,5 +38,43 @@ class FirebaseService {
     }
   }
 
+  // Add like functionality
+  Future<void> toggleLike(String eventId, String userId) async {
+    final docRef = eventsCollection.doc(eventId);
+
+    return _firestore.runTransaction((transaction) async {
+      final snapshot = await transaction.get(docRef);
+      if (!snapshot.exists) return;
+
+      final likes = List<String>.from(snapshot.data()?['likes'] ?? []);
+
+      if (likes.contains(userId)) {
+        likes.remove(userId);
+      } else {
+        likes.add(userId);
+      }
+
+      transaction.update(docRef, {'likes': likes});
+    });
+  }
+
+  // Delete event with its image
+  Future<void> deleteEvent(String eventId) async {
+    try {
+      final docRef = eventsCollection.doc(eventId);
+      final doc = await docRef.get();
+
+      if (doc.exists) {
+        final imageUrl = doc.data()?['imageUrl'];
+        if (imageUrl != null) {
+          await deleteImage(imageUrl);
+        }
+        await docRef.delete();
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   static instance() {}
 }
