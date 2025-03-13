@@ -1,14 +1,42 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseService {
-  static final FirebaseService _instance = FirebaseService._internal();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static FirebaseService? _instance;
+  static bool _initialized = false;
 
-  factory FirebaseService() {
-    return _instance;
+  final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
+
+  FirebaseService._()
+    : _firestore = FirebaseFirestore.instance,
+      _storage = FirebaseStorage.instance;
+
+  static Future<FirebaseService> getInstance() async {
+    if (!_initialized) {
+      await Firebase.initializeApp();
+      _initialized = true;
+      _instance = FirebaseService._();
+    }
+    return _instance!;
   }
 
-  FirebaseService._internal();
+  CollectionReference<Map<String, dynamic>> get eventsCollection =>
+      _firestore.collection('events');
 
-  FirebaseFirestore get firestore => _firestore;
+  Reference get eventsStorageRef => _storage.ref().child('events');
+
+  Future<void> deleteImage(String imageUrl) async {
+    try {
+      final ref = _storage.refFromURL(imageUrl);
+      await ref.delete();
+    } on FirebaseException catch (e) {
+      if (e.code != 'object-not-found') {
+        rethrow;
+      }
+    }
+  }
+
+  static instance() {}
 }

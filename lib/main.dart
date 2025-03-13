@@ -18,10 +18,22 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Events App',
+      title: 'ThirdRail',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF6750A4),
+          primary: const Color(0xFF6750A4),
+          secondary: const Color(0xFF03DAC6),
+          tertiary: const Color(0xFFE6E1E5),
+        ),
         useMaterial3: true,
+        cardTheme: CardTheme(
+          elevation: 4,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
       ),
       home: const HomePage(),
     );
@@ -55,34 +67,82 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Upcoming Events'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        centerTitle: true,
+        title: const Text(
+          'ThirdRail',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+        elevation: 2,
       ),
-      body: FutureBuilder<List<Event>>(
-        future: _eventsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              // ignore: deprecated_member_use
+              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              Theme.of(context).colorScheme.surface,
+            ],
+          ),
+        ),
+        child: FutureBuilder<List<Event>>(
+          future: _eventsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                    fontSize: 16,
+                  ),
+                ),
+              );
+            }
 
-          final events = snapshot.data ?? [];
-          if (events.isEmpty) {
-            return const Center(child: Text('No events found'));
-          }
+            final events = snapshot.data ?? [];
+            if (events.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.event_busy,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No events found',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ],
+                ),
+              );
+            }
 
-          return ListView.builder(
-            itemCount: events.length,
-            itemBuilder:
-                (context, index) =>
-                    EventCard(event: events[index], onDelete: _refreshEvents),
-          );
-        },
+            return ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: events.length,
+              itemBuilder:
+                  (context, index) =>
+                      EventCard(event: events[index], onDelete: _refreshEvents),
+            );
+          },
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           await Navigator.push(
             context,
@@ -90,7 +150,10 @@ class _HomePageState extends State<HomePage> {
           );
           _refreshEvents();
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Add Event'),
+        backgroundColor: Theme.of(context).colorScheme.secondary,
+        foregroundColor: Colors.black87,
       ),
     );
   }

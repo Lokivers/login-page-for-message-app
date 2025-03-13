@@ -11,53 +11,48 @@ class UploadEventScreen extends StatefulWidget {
 
 class _UploadEventScreenState extends State<UploadEventScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _eventRepository = EventRepository();
-  DateTime? _selectedDate;
-
   final _titleController = TextEditingController();
-  final _imageUrlController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
   final _categoryController = TextEditingController();
+  DateTime _selectedDate = DateTime.now();
+  final _repository = EventRepository();
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _selectedDate,
       firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      lastDate: DateTime(2025),
     );
-    if (picked != null) {
+    if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
       });
     }
   }
 
-  Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate() && _selectedDate != null) {
+  void _submitForm() async {
+    if (_formKey.currentState!.validate()) {
       try {
         final event = Event(
+          id: DateTime.now().toString(), // Temporary ID
           title: _titleController.text,
-          imageUrl: _imageUrlController.text,
           description: _descriptionController.text,
-          eventDate: _selectedDate!,
+          date: _selectedDate,
           location: _locationController.text,
           category: _categoryController.text,
         );
 
-        await _eventRepository.uploadEvent(event);
+        await _repository.uploadEvent(event);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Event uploaded successfully!')),
-          );
           Navigator.pop(context);
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error uploading event: $e')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error uploading event: $e')),
+          );
         }
       }
     }
@@ -66,49 +61,35 @@ class _UploadEventScreenState extends State<UploadEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Upload Event')),
-      body: SingleChildScrollView(
+      appBar: AppBar(
+        title: const Text('Upload Event'),
+        centerTitle: true,
+      ),
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: ListView(
             children: [
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Event Title'),
-                validator:
-                    (value) =>
-                        value?.isEmpty ?? true ? 'Please enter a title' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _imageUrlController,
-                decoration: const InputDecoration(labelText: 'Image URL'),
-                validator:
-                    (value) =>
-                        value?.isEmpty ?? true
-                            ? 'Please enter an image URL'
-                            : null,
+                decoration: const InputDecoration(labelText: 'Title'),
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'Title is required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
                 maxLines: 3,
-                validator:
-                    (value) =>
-                        value?.isEmpty ?? true
-                            ? 'Please enter a description'
-                            : null,
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'Description is required' : null,
               ),
               const SizedBox(height: 16),
               ListTile(
-                title: Text(
-                  _selectedDate == null
-                      ? 'Select Date'
-                      : 'Date: ${_selectedDate.toString().split(' ')[0]}',
-                ),
+                title: const Text('Event Date'),
+                subtitle: Text(
+                    '${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}'),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selectDate(context),
               ),
@@ -116,23 +97,13 @@ class _UploadEventScreenState extends State<UploadEventScreen> {
               TextFormField(
                 controller: _locationController,
                 decoration: const InputDecoration(labelText: 'Location'),
-                validator:
-                    (value) =>
-                        value?.isEmpty ?? true
-                            ? 'Please enter a location'
-                            : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _categoryController,
                 decoration: const InputDecoration(labelText: 'Category'),
-                validator:
-                    (value) =>
-                        value?.isEmpty ?? true
-                            ? 'Please enter a category'
-                            : null,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _submitForm,
                 child: const Text('Upload Event'),
@@ -147,7 +118,6 @@ class _UploadEventScreenState extends State<UploadEventScreen> {
   @override
   void dispose() {
     _titleController.dispose();
-    _imageUrlController.dispose();
     _descriptionController.dispose();
     _locationController.dispose();
     _categoryController.dispose();

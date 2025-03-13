@@ -1,45 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/event.dart';
-import '../repositories/event_repository.dart';
 
-class EventCard extends StatelessWidget {
+class EventCard extends StatefulWidget {
   final Event event;
-  final Function? onDelete;
+  final VoidCallback onDelete;
 
-  const EventCard({super.key, required this.event, this.onDelete});
+  const EventCard({super.key, required this.event, required this.onDelete});
 
-  Future<void> _confirmDelete(BuildContext context) async {
-    final bool? confirm = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Delete'),
-          content: const Text('Are you sure you want to delete this event?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(false),
-            ),
-            TextButton(
-              child: const Text('Delete'),
-              onPressed: () => Navigator.of(context).pop(true),
-            ),
-          ],
+  @override
+  State<EventCard> createState() => _EventCardState();
+}
+
+class _EventCardState extends State<EventCard> {
+  final dateFormat = DateFormat('MMM dd, yyyy');
+
+  Future<void> _handleLike() async {
+    try {
+      await widget.event.toggleLike();
+      setState(() {}); // Refresh UI
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update like status')),
         );
-      },
-    );
+      }
+    }
+  }
 
-    if (confirm == true && event.id != null) {
-      try {
-        await EventRepository().deleteEvent(event.id!);
-        onDelete?.call();
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error deleting event: $e')));
-        }
+  Future<void> _handleDelete() async {
+    try {
+      await widget.event.delete();
+      widget.onDelete();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to delete event')));
       }
     }
   }
@@ -47,83 +44,117 @@ class EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              Image.network(
-                event.imageUrl,
-                width: double.infinity,
-                height: 180,
-                fit: BoxFit.cover,
-              ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: IconButton(
-                  onPressed: () => _confirmDelete(context),
-                  icon: const Icon(Icons.delete),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.7),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.event.title,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Chip(
-                      label: Text(event.category),
-                      backgroundColor:
-                          Theme.of(context).colorScheme.primaryContainer,
-                    ),
-                    const Spacer(),
-                    Icon(
-                      Icons.calendar_today,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      DateFormat('MMM d, y • h:mm a').format(event.eventDate),
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
+                IconButton(
+                  icon: Icon(
+                    widget.event.isLiked
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: widget.event.isLiked ? Colors.red : null,
+                  ),
+                  onPressed: _handleLike,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  event.title,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(event.location),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  event.description,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  color: Theme.of(context).colorScheme.error,
+                  onPressed: _handleDelete,
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              widget.event.description,
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  dateFormat.format(widget.event.date),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                if (widget.event.location != null) ...[
+                  const SizedBox(width: 16),
+                  Icon(
+                    Icons.location_on,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    widget.event.location!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+                const Spacer(),
+                if (widget.event.category != null)
+                  Chip(
+                    label: Text(widget.event.category!),
+                    backgroundColor:
+                        Theme.of(context).colorScheme.secondaryContainer,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  dateFormat.format(widget.event.date),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const Spacer(),
+                TextButton.icon(
+                  icon: const Icon(Icons.share),
+                  label: const Text('Share'),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Share functionality coming soon!'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
