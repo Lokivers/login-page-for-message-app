@@ -9,6 +9,7 @@ class Event {
   final DateTime date;
   final String? location;
   final String? category;
+  final String imageUrl; // New field
   bool isLiked;
 
   Event({
@@ -18,6 +19,7 @@ class Event {
     required this.date,
     this.location,
     this.category,
+    this.imageUrl = '', // Default empty string
     this.isLiked = false,
   });
 
@@ -45,6 +47,7 @@ class Event {
       date: eventDate,
       location: data['location'],
       category: data['category'],
+      imageUrl: data['imageUrl'] ?? '', // New field
       isLiked: data['isLiked'] ?? false,
     );
   }
@@ -57,6 +60,7 @@ class Event {
           date, // Firestore will automatically convert DateTime to Timestamp
       'location': location,
       'category': category,
+      'imageUrl': imageUrl, // New field
       'isLiked': isLiked,
     };
   }
@@ -100,4 +104,6 @@ class Event {
         date.month == other.month &&
         date.day == other.day;
   }
+
+  toMap() {}
 }
